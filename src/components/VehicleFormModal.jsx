@@ -15,7 +15,7 @@ const VehicleForm = ({
     brand: "",
     model: "",
     year: new Date().getFullYear(),
-    status: "Available",
+    status: "Disponible",
     city: "",
   });
 

@@ -1,138 +1,162 @@
-// Simulación de base de datos local
-let vehicles = [
-  {
-    id: '1',
-    vin: 'WBA3A5C50CF370001',
-    brand: 'BMW',
-    model: 'X3',
-    year: 2020,
-    status: 'Available',
-    city: 'Madrid'
-  },
-  {
-    id: '2',
-    vin: 'WAUAF78E67A123456',
-    brand: 'Audi',
-    model: 'A4',
-    year: 2019,
-    status: 'Sold',
-    city: 'Barcelona'
-  },
-  {
-    id: '3',
-    vin: 'JH4KA8260PC123456',
-    brand: 'Mercedes',
-    model: 'C-Class',
-    year: 2021,
-    status: 'Available',
-    city: 'Valencia'
-  }
-];
+import axios from 'axios';
 
-// Función para generar IDs únicos
-const generateId = () => {
-  return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+// Configuración base de axios para conectar con el backend Spring Boot
+const API_BASE_URL = 'http://localhost:8080/api/vehicles';
+
+// Configurar axios con interceptores para manejo de errores
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+
+// Interceptor para manejo de errores
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error);
+    
+    if (error.response) {
+      // El servidor respondió con un código de estado de error
+      let message = error.response.data?.message || error.response.data || error.message;
+      
+      // Asegurar que message sea un string
+      if (typeof message !== 'string') {
+        message = JSON.stringify(message) || 'Error desconocido';
+      }
+      
+      // Detectar error de VIN duplicado
+      if (message.includes('ya está registrado') || (message.includes('VIN') && message.includes('registrado'))) {
+        throw new Error('VIN ya se encuentra registrado');
+      }
+      
+      throw new Error(message);
+    } else if (error.request) {
+      // La solicitud se hizo pero no se recibió respuesta
+      throw new Error('No se pudo conectar con el servidor. Asegúrate de que el backend esté ejecutándose en el puerto 8080.');
+    } else {
+      // Algo pasó al configurar la solicitud
+      throw new Error(error.message);
+    }
+  }
+);
+
+// Función para mapear datos del frontend al formato del backend
+const mapToBackendFormat = (vehicleData) => {
+  return {
+    make: vehicleData.brand || vehicleData.make,
+    model: vehicleData.model,
+    modelYear: vehicleData.year?.toString() || vehicleData.modelYear,
+    vin: vehicleData.vin,
+    location: vehicleData.city || vehicleData.location,
+    status: vehicleData.status === 'Disponible' ? true : false
+  };
 };
 
-// Simular delay de red
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+// Función para mapear datos del backend al formato del frontend
+const mapToFrontendFormat = (backendData) => {
+  // Manejar tanto DTOs (de GET) como entidades (de POST/PUT)
+  const vehicle = backendData;
+  
+  return {
+    id: vehicle.id?.toString() || vehicle.id,
+    vin: vehicle.vin,
+    brand: vehicle.make,
+    model: vehicle.model,
+    year: parseInt(vehicle.modelYear) || vehicle.modelYear,
+    status: vehicle.status === true || vehicle.status === 'true' ? 'Disponible' : 'No Disponible',
+    city: vehicle.location
+  };
+};
 
 export const vehicleService = {
   // Obtener todos los vehículos
   async getAllVehicles() {
-    await delay(300); // Simular latencia de red
-    return [...vehicles];
+    try {
+      const response = await api.get('');
+      return response.data.map(mapToFrontendFormat);
+    } catch (error) {
+      console.error('Error getting all vehicles:', error);
+      throw error;
+    }
   },
 
   // Obtener vehículo por ID
   async getVehicleById(id) {
-    await delay(200);
-    const vehicle = vehicles.find(v => v.id === id);
-    if (!vehicle) {
-      throw new Error(`Vehicle with ID ${id} not found`);
+    try {
+      // Validar que el ID sea válido
+      if (!id || id === 'undefined' || id === 'null') {
+        throw new Error('ID de vehículo no válido');
+      }
+
+      const response = await api.get(`/${id}`);
+      return mapToFrontendFormat(response.data);
+    } catch (error) {
+      console.error(`Error getting vehicle ${id}:`, error);
+      throw error;
     }
-    return { ...vehicle };
   },
 
   // Crear nuevo vehículo
   async createVehicle(vehicleData) {
-    await delay(300);
-    
-    // Validación básica
-    if (!vehicleData.vin || !vehicleData.brand || !vehicleData.model) {
-      throw new Error('VIN, Brand, and Model are required fields');
+    try {
+      // Validación básica en el frontend
+      if (!vehicleData.vin || !vehicleData.brand || !vehicleData.model) {
+        throw new Error('VIN, Brand, and Model are required fields');
+      }
+
+      const backendData = mapToBackendFormat(vehicleData);
+      const response = await api.post('', backendData);
+      return mapToFrontendFormat(response.data);
+    } catch (error) {
+      console.error('Error creating vehicle:', error);
+      throw error;
     }
-
-    // Verificar que el VIN no esté duplicado
-    const existingVehicle = vehicles.find(v => v.vin === vehicleData.vin);
-    if (existingVehicle) {
-      throw new Error('A vehicle with this VIN already exists');
-    }
-
-    const newVehicle = {
-      id: generateId(),
-      vin: vehicleData.vin,
-      brand: vehicleData.brand,
-      model: vehicleData.model,
-      year: vehicleData.year || new Date().getFullYear(),
-      status: vehicleData.status || 'Available',
-      city: vehicleData.city || ''
-    };
-
-    vehicles.push(newVehicle);
-    return { ...newVehicle };
   },
 
   // Actualizar vehículo existente
   async updateVehicle(id, vehicleData) {
-    await delay(300);
-    
-    const index = vehicles.findIndex(v => v.id === id);
-    if (index === -1) {
-      throw new Error(`Vehicle with ID ${id} not found`);
+    try {
+      // Validación básica en el frontend
+      if (!vehicleData.vin || !vehicleData.brand || !vehicleData.model) {
+        throw new Error('VIN, Brand, and Model are required fields');
+      }
+
+      const backendData = mapToBackendFormat(vehicleData);
+      const response = await api.put(`/${id}`, backendData);
+      return mapToFrontendFormat(response.data);
+    } catch (error) {
+      console.error(`Error updating vehicle ${id}:`, error);
+      throw error;
     }
-
-    // Validación básica
-    if (!vehicleData.vin || !vehicleData.brand || !vehicleData.model) {
-      throw new Error('VIN, Brand, and Model are required fields');
-    }
-
-    // Verificar que el VIN no esté duplicado (excepto en el mismo vehículo)
-    const existingVehicle = vehicles.find(v => v.vin === vehicleData.vin && v.id !== id);
-    if (existingVehicle) {
-      throw new Error('A vehicle with this VIN already exists');
-    }
-
-    const updatedVehicle = {
-      ...vehicles[index],
-      vin: vehicleData.vin,
-      brand: vehicleData.brand,
-      model: vehicleData.model,
-      year: vehicleData.year || vehicles[index].year,
-      status: vehicleData.status || vehicles[index].status,
-      city: vehicleData.city || vehicles[index].city
-    };
-
-    vehicles[index] = updatedVehicle;
-    return { ...updatedVehicle };
   },
 
   // Eliminar vehículo
   async deleteVehicle(id) {
-    await delay(200);
-    
-    const index = vehicles.findIndex(v => v.id === id);
-    if (index === -1) {
-      throw new Error(`Vehicle with ID ${id} not found`);
+    try {
+      await api.delete(`/${id}`);
+      return { success: true, message: 'Vehicle deleted successfully' };
+    } catch (error) {
+      console.error(`Error deleting vehicle ${id}:`, error);
+      throw error;
     }
-
-    const deletedVehicle = vehicles[index];
-    vehicles.splice(index, 1);
-    return { ...deletedVehicle };
   },
 
   // Opciones para estados de vehículos
   getStatusOptions() {
-    return ['Available', 'Sold', 'Under Maintenance', 'Reserved'];
+    return ['Disponible', 'No Disponible'];
+  },
+
+  // Función utilitaria para verificar si el backend está disponible
+  async checkBackendConnection() {
+    try {
+      await api.get('');
+      return true;
+    } catch (error) {
+      console.error('Backend connection failed:', error);
+      return false;
+    }
   }
 };

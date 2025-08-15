@@ -9,6 +9,7 @@ const VehicleList = () => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [connectionError, setConnectionError] = useState(null);
 
   useEffect(() => {
     loadVehicles();
@@ -16,11 +17,17 @@ const VehicleList = () => {
 
   const loadVehicles = async () => {
     setLoading(true);
+    setConnectionError(null);
     try {
       const data = await vehicleService.getAllVehicles();
       setVehicles(data);
     } catch (error) {
-      alert("Error al cargar los vehículos: " + error.message);
+      console.error("Error loading vehicles:", error);
+      setConnectionError(error.message);
+      // Si es un error de conexión, mostrar mensaje específico
+      if (error.message.includes('No se pudo conectar')) {
+        setConnectionError("No se pudo conectar con el backend. Asegúrate de que esté ejecutándose en http://localhost:8080");
+      }
     } finally {
       setLoading(false);
     }
@@ -56,6 +63,7 @@ const VehicleList = () => {
             <h1>Gestión de Vehículos</h1>
             <p className="page-subtitle">
               {!loading &&
+                !connectionError &&
                 vehicles.length > 0 &&
                 `Total: ${vehicles.length} vehículo${
                   vehicles.length !== 1 ? "s" : ""
@@ -66,6 +74,7 @@ const VehicleList = () => {
             <button
               onClick={() => setShowCreateModal(true)}
               className="btn btn-primary btn-large"
+              disabled={connectionError}
             >
               <span className="btn-text-full">+ Agregar Vehículo</span>
               <span className="btn-text-short">+ Agregar</span>
@@ -73,6 +82,22 @@ const VehicleList = () => {
           </div>
         </div>
       </div>
+
+      {/* Mostrar error de conexión si existe */}
+      {connectionError && (
+        <div className="error-banner">
+          <div className="error-content">
+            <h3>⚠️ Error de Conexión</h3>
+            <p>{connectionError}</p>
+            <button 
+              onClick={loadVehicles} 
+              className="btn btn-secondary"
+            >
+              Reintentar Conexión
+            </button>
+          </div>
+        </div>
+      )}
 
       <VehicleTable
         vehicles={vehicles}

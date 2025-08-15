@@ -3,10 +3,8 @@ import { Link } from "react-router-dom";
 const VehicleTable = ({ vehicles, onAdd, loading }) => {
   const getStatusBadgeClass = (status) => {
     const statusMap = {
-      Available: "status-available",
-      Sold: "status-sold",
-      "Under Maintenance": "status-maintenance",
-      Reserved: "status-reserved",
+      "Disponible": "status-available",
+      "No Disponible": "status-sold",
     };
     return `status-badge ${statusMap[status] || "status-available"}`;
   };
