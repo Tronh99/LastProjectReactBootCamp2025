@@ -47,7 +47,7 @@ const VehicleList = () => {
     setShowCreateModal(false);
     loadVehicles();
     alert(
-      `Vehículo ${newVehicle.brand} ${newVehicle.model} creado exitosamente`
+      `Vehicle ${newVehicle.brand} ${newVehicle.model} created successfully`
     );
   };
 
@@ -60,12 +60,12 @@ const VehicleList = () => {
       <div className="page-header">
         <div className="page-header-content">
           <div className="page-header-info">
-            <h1>Gestión de Vehículos</h1>
+            <h1>Vehicle Management</h1>
             <p className="page-subtitle">
               {!loading &&
                 !connectionError &&
                 vehicles.length > 0 &&
-                `Total: ${vehicles.length} vehículo${
+                `Total: ${vehicles.length} vehicle${
                   vehicles.length !== 1 ? "s" : ""
                 }`}
             </p>
@@ -76,8 +76,8 @@ const VehicleList = () => {
               className="btn btn-primary btn-large"
               disabled={connectionError}
             >
-              <span className="btn-text-full">+ Agregar Vehículo</span>
-              <span className="btn-text-short">+ Agregar</span>
+              <span className="btn-text-full">+ Add Vehicle</span>
+              <span className="btn-text-short">+ Add</span>
             </button>
           </div>
         </div>
@@ -87,13 +87,13 @@ const VehicleList = () => {
       {connectionError && (
         <div className="error-banner">
           <div className="error-content">
-            <h3>⚠️ Error de Conexión</h3>
+            <h3>⚠️ Connection Error</h3>
             <p>{connectionError}</p>
             <button 
               onClick={loadVehicles} 
               className="btn btn-secondary"
             >
-              Reintentar Conexión
+              Retry Connection
             </button>
           </div>
         </div>
@@ -109,7 +109,7 @@ const VehicleList = () => {
       <Modal
         isOpen={showCreateModal}
         onClose={handleCloseModals}
-        title="Agregar Nuevo Vehículo"
+        title="Add New Vehicle"
         size="medium"
       >
         <VehicleForm

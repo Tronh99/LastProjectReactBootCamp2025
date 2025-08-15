@@ -64,7 +64,7 @@ const VehicleDetail = () => {
       <div className="container">
         <div className="card vehicle-detail-container">
           <div className="text-center">
-            <h2>Cargando vehículo...</h2>
+            <h2>Loading vehicle...</h2>
           </div>
         </div>
       </div>
@@ -76,9 +76,9 @@ const VehicleDetail = () => {
       <div className="container">
         <div className="card vehicle-detail-container">
           <div className="text-center">
-            <h2>Vehículo no encontrado</h2>
+            <h2>Vehicle not found</h2>
             <Link to="/" className="btn btn-primary mt-1">
-              Volver a la lista
+              Back to list
             </Link>
           </div>
         </div>
@@ -95,7 +95,7 @@ const VehicleDetail = () => {
             <h1>
               {vehicle.brand} {vehicle.model}
             </h1>
-            <p>Año {vehicle.year}</p>
+            <p>Year {vehicle.year}</p>
           </div>
           <div className="vehicle-detail-actions">
             <div className="btn-group">
@@ -106,10 +106,10 @@ const VehicleDetail = () => {
                   editing ? "btn-primary" : "btn-secondary"
                 }`}
               >
-                {editing ? "Cancelar" : "Editar"}
+                {editing ? "Cancel" : "Edit"}
               </button>
               <button onClick={handleDelete} className="btn btn-danger">
-                Eliminar
+                Delete
               </button>
             </div>
           </div>
@@ -120,7 +120,7 @@ const VehicleDetail = () => {
           {!editing ? (
             <>
               <div className="vehicle-detail-section">
-                <h3>Información del Vehículo</h3>
+                <h3>Vehicle Information</h3>
 
                 <div className="vehicle-detail-field">
                   <label>VIN:</label>
@@ -128,40 +128,40 @@ const VehicleDetail = () => {
                 </div>
 
                 <div className="vehicle-detail-field">
-                  <label>Marca:</label>
+                  <label>Brand:</label>
                   <span>{vehicle.brand}</span>
                 </div>
 
                 <div className="vehicle-detail-field">
-                  <label>Modelo:</label>
+                  <label>Model:</label>
                   <span>{vehicle.model}</span>
                 </div>
 
                 <div className="vehicle-detail-field">
-                  <label>Año:</label>
+                  <label>Year:</label>
                   <span>{vehicle.year}</span>
                 </div>
               </div>
 
               <div className="vehicle-detail-section">
-                <h3>Estado y Ubicación</h3>
+                <h3>Status and Location</h3>
 
                 <div className="vehicle-detail-field">
-                  <label>Estado:</label>
+                  <label>Status:</label>
                   <span className={getStatusBadgeClass(vehicle.status)}>
                     {vehicle.status}
                   </span>
                 </div>
 
                 <div className="vehicle-detail-field">
-                  <label>Ciudad:</label>
+                  <label>City:</label>
                   <span>{vehicle.city || "No especificada"}</span>
                 </div>
               </div>
             </>
           ) : (
             <div className="vehicle-detail-section" style={{ width: "100%" }}>
-              <h3>Editar Vehículo</h3>
+              <h3>Edit Vehicle</h3>
               <VehicleFormModal
                 vehicleId={vehicle.id}
                 isEdit={true}
@@ -177,7 +177,7 @@ const VehicleDetail = () => {
           <div className="vehicle-detail-footer">
             <div className="btn-group">
               <Link to="/" className="btn btn-outline">
-                ← Volver a la lista
+                ← Back to list
               </Link>
             </div>
           </div>

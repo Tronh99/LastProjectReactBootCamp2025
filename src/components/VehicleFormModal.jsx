@@ -1,3 +1,5 @@
+import { mexicoCities } from "../services/DropdownOptions";
+import { brandOptions } from "../services/DropdownOptions";
 import { useState, useEffect } from "react";
 import { vehicleService } from "../services/vehicleService";
 
@@ -10,12 +12,13 @@ const VehicleForm = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
   const [formData, setFormData] = useState({
     vin: "",
     brand: "",
     model: "",
     year: new Date().getFullYear(),
-    status: "Disponible",
+    status: "Available",
     city: "",
   });
 
@@ -128,7 +131,7 @@ const VehicleForm = ({
       <div className={standalone ? "container" : ""}>
         <div className={standalone ? "form-container" : ""}>
           <div className="text-center">
-            <h2>Cargando vehículo...</h2>
+            <h2>Loading vehicle...</h2>
           </div>
         </div>
       </div>
@@ -157,23 +160,28 @@ const VehicleForm = ({
       <div className="form-row">
         <div className="form-group">
           <label className="form-label required" htmlFor="brand">
-            Marca
+            Brand
           </label>
-          <input
-            type="text"
+          <select
             id="brand"
             name="brand"
             value={formData.brand}
             onChange={handleChange}
-            className={`form-input ${errors.brand ? "error" : ""}`}
-            placeholder="Ej: Toyota, BMW, Honda"
-          />
+            className={`form-select ${errors.brand ? "error" : ""}`}
+          >
+            <option value="">Seleccione una marca</option>
+            {brandOptions.map((brand) => (
+              <option key={brand} value={brand}>
+                {brand}
+              </option>
+            ))}
+          </select>
           {errors.brand && <span className="form-error">{errors.brand}</span>}
         </div>
 
         <div className="form-group">
           <label className="form-label required" htmlFor="model">
-            Modelo
+            Model
           </label>
           <input
             type="text"
@@ -191,7 +199,7 @@ const VehicleForm = ({
       <div className="form-row">
         <div className="form-group">
           <label className="form-label required" htmlFor="year">
-            Año
+            Year
           </label>
           <input
             type="number"
@@ -208,7 +216,7 @@ const VehicleForm = ({
 
         <div className="form-group">
           <label className="form-label required" htmlFor="status">
-            Estado
+            Status
           </label>
           <select
             id="status"
@@ -229,17 +237,22 @@ const VehicleForm = ({
 
       <div className="form-group">
         <label className="form-label" htmlFor="city">
-          Ciudad
+          City
         </label>
-        <input
-          type="text"
+        <select
           id="city"
           name="city"
           value={formData.city}
           onChange={handleChange}
-          className="form-input"
-          placeholder="Ciudad donde se encuentra el vehículo"
-        />
+          className="form-select"
+        >
+          <option value="">Seleccione una ciudad</option>
+          {mexicoCities.map((city) => (
+            <option key={city} value={city}>
+              {city}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="form-actions">
@@ -249,10 +262,10 @@ const VehicleForm = ({
           className="btn btn-secondary"
           disabled={loading}
         >
-          Cancelar
+          Cancel
         </button>
         <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? "Guardando..." : isEdit ? "Actualizar" : "Crear"} Vehículo
+          {loading ? "Saving..." : isEdit ? "Update" : "Create"} Vehicle
         </button>
       </div>
     </form>
@@ -263,7 +276,7 @@ const VehicleForm = ({
       <div className="container">
         <div className="form-container">
           <h2 className="text-center mb-2">
-            {isEdit ? "Editar Vehículo" : "Agregar Nuevo Vehículo"}
+            {isEdit ? "Edit Vehicle" : "Add New Vehicle"}
           </h2>
           {formContent}
         </div>

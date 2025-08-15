@@ -11,7 +11,7 @@ const VehicleForm = ({ vehicleId, isEdit = false }) => {
     brand: "",
     model: "",
     year: new Date().getFullYear(),
-    status: "Disponible",
+    status: "Available",
     city: "",
   });
 
@@ -120,7 +120,7 @@ const VehicleForm = ({ vehicleId, isEdit = false }) => {
       <div className="container">
         <div className="form-container">
           <div className="text-center">
-            <h2>Cargando vehículo...</h2>
+            <h2>Loading vehicle...</h2>
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@ const VehicleForm = ({ vehicleId, isEdit = false }) => {
     <div className="container">
       <div className="form-container">
         <h2 className="text-center mb-2">
-          {isEdit ? "Editar Vehículo" : "Agregar Nuevo Vehículo"}
+          {isEdit ? "Edit Vehicle" : "Add New Vehicle"}
         </h2>
 
         <form onSubmit={handleSubmit}>
@@ -155,7 +155,7 @@ const VehicleForm = ({ vehicleId, isEdit = false }) => {
           <div className="form-row">
             <div className="form-group">
               <label className="form-label required" htmlFor="brand">
-                Marca
+                Brand
               </label>
               <input
                 type="text"
@@ -173,7 +173,7 @@ const VehicleForm = ({ vehicleId, isEdit = false }) => {
 
             <div className="form-group">
               <label className="form-label required" htmlFor="model">
-                Modelo
+                Model
               </label>
               <input
                 type="text"
@@ -193,7 +193,7 @@ const VehicleForm = ({ vehicleId, isEdit = false }) => {
           <div className="form-row">
             <div className="form-group">
               <label className="form-label required" htmlFor="year">
-                Año
+                Year
               </label>
               <input
                 type="number"
@@ -210,7 +210,7 @@ const VehicleForm = ({ vehicleId, isEdit = false }) => {
 
             <div className="form-group">
               <label className="form-label required" htmlFor="status">
-                Estado
+                Status
               </label>
               <select
                 id="status"
@@ -233,7 +233,7 @@ const VehicleForm = ({ vehicleId, isEdit = false }) => {
 
           <div className="form-group">
             <label className="form-label" htmlFor="city">
-              Ciudad
+              City
             </label>
             <input
               type="text"
@@ -242,7 +242,7 @@ const VehicleForm = ({ vehicleId, isEdit = false }) => {
               value={formData.city}
               onChange={handleChange}
               className="form-input"
-              placeholder="Ciudad donde se encuentra el vehículo"
+              placeholder="Ej: New York, Los Angeles, Chicago"
             />
           </div>
 
@@ -253,15 +253,15 @@ const VehicleForm = ({ vehicleId, isEdit = false }) => {
               className="btn btn-secondary"
               disabled={loading}
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="btn btn-primary"
               disabled={loading}
             >
-              {loading ? "Guardando..." : isEdit ? "Actualizar" : "Crear"}{" "}
-              Vehículo
+              {loading ? "Saving..." : isEdit ? "Update" : "Create"}{" "}
+              Vehicle
             </button>
           </div>
         </form>

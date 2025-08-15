@@ -15,14 +15,6 @@ const Navbar = () => {
             <div className="navbar-logo">S</div>
             <h1 className="navbar-title">Solera Vehicle Manager</h1>
           </Link>
-
-          <ul className="navbar-nav">
-            <li>
-              <span className="nav-label">
-                Gestión de Vehículos
-              </span>
-            </li>
-          </ul>
         </div>
       </div>
     </nav>

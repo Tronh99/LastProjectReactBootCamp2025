@@ -146,7 +146,7 @@ export const vehicleService = {
 
   // Opciones para estados de vehículos
   getStatusOptions() {
-    return ['Disponible', 'No Disponible'];
+    return ['Available', 'Not Available'];
   },
 
   // Función utilitaria para verificar si el backend está disponible

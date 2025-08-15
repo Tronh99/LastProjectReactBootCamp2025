@@ -5,15 +5,16 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
     const statusMap = {
       "Disponible": "status-available",
       "No Disponible": "status-sold",
+      
     };
     return `status-badge ${statusMap[status] || "status-available"}`;
   };
-
+  
   if (loading) {
     return (
       <div className="table-container">
         <div className="empty-state">
-          <h3>Cargando vehículos...</h3>
+          <h3>Loading vehicles...</h3>
         </div>
       </div>
     );
@@ -23,10 +24,10 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
     return (
       <div className="table-container">
         <div className="empty-state">
-          <h3>No hay vehículos registrados</h3>
-          <p>Comience agregando su primer vehículo al sistema.</p>
+          <h3>No vehicles registered</h3>
+          <p>Start by adding your first vehicle to the system.</p>
           <button onClick={() => onAdd && onAdd()} className="btn btn-primary">
-            Agregar Primer Vehículo
+            Add First Vehicle
           </button>
         </div>
       </div>
@@ -39,12 +40,12 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
         <thead>
           <tr>
             <th>VIN</th>
-            <th>Marca</th>
-            <th>Modelo</th>
-            <th>Año</th>
-            <th>Estado</th>
-            <th>Ciudad</th>
-            <th>Acciones</th>
+            <th>Brand</th>
+            <th>Model</th>
+            <th>Year</th>
+            <th>Status</th>
+            <th>City</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -66,7 +67,7 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
                     to={`/vehicles/${vehicle.id}`}
                     className="btn btn-outline btn-small"
                   >
-                    Ver
+                    View Details
                   </Link>
                   {/* Eliminar movido a la página de detalle */}
                 </div>
