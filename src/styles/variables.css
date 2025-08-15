@@ -1,11 +1,11 @@
 /* Colores corporativos de Solera Holdings */
 :root {
-  --solera-red: #E1251B;
-  --solera-red-dark: #C11E16;
-  --solera-gray-dark: #333333;
-  --solera-gray-light: #F2F2F2;
-  --solera-white: #FFFFFF;
-  --solera-black: #000000;
+  --solera-red: #a259e6; /* Main purple */
+  --solera-red-dark: #6c2eb7; /* Darker purple */
+  --solera-gray-dark: #3d246c; /* Deep purple for text */
+  --solera-gray-light: #f3e9ff; /* Light purple background */
+  --solera-white: #f8f6fc; /* Off-white with purple tint */
+  --solera-black: #2d133b; /* Very dark purple */
   --border-color: #dddddd;
   --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
