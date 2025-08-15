@@ -1,15 +1,41 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const VehicleTable = ({ vehicles, onAdd, loading }) => {
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        // Toggle direction
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const sortedVehicles = [...vehicles];
+  if (sortConfig.key) {
+    sortedVehicles.sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
   const getStatusBadgeClass = (status) => {
     const statusMap = {
-      "Disponible": "status-available",
+      Disponible: "status-available",
       "No Disponible": "status-sold",
-      
     };
     return `status-badge ${statusMap[status] || "status-available"}`;
   };
-  
+
   if (loading) {
     return (
       <div className="table-container">
@@ -39,17 +65,59 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
       <table className="table">
         <thead>
           <tr>
-            <th>VIN</th>
-            <th>Brand</th>
-            <th>Model</th>
-            <th>Year</th>
-            <th>Status</th>
-            <th>City</th>
+            <th onClick={() => handleSort("vin")}>
+              VIN{" "}
+              {sortConfig.key === "vin"
+                ? sortConfig.direction === "asc"
+                  ? "▲"
+                  : "▼"
+                : ""}
+            </th>
+            <th onClick={() => handleSort("brand")}>
+              Brand{" "}
+              {sortConfig.key === "brand"
+                ? sortConfig.direction === "asc"
+                  ? "▲"
+                  : "▼"
+                : ""}
+            </th>
+            <th onClick={() => handleSort("model")}>
+              Model{" "}
+              {sortConfig.key === "model"
+                ? sortConfig.direction === "asc"
+                  ? "▲"
+                  : "▼"
+                : ""}
+            </th>
+            <th onClick={() => handleSort("year")}>
+              Year{" "}
+              {sortConfig.key === "year"
+                ? sortConfig.direction === "asc"
+                  ? "▲"
+                  : "▼"
+                : ""}
+            </th>
+            <th onClick={() => handleSort("status")}>
+              Status{" "}
+              {sortConfig.key === "status"
+                ? sortConfig.direction === "asc"
+                  ? "▲"
+                  : "▼"
+                : ""}
+            </th>
+            <th onClick={() => handleSort("city")}>
+              City{" "}
+              {sortConfig.key === "city"
+                ? sortConfig.direction === "asc"
+                  ? "▲"
+                  : "▼"
+                : ""}
+            </th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {vehicles.map((vehicle) => (
+          {sortedVehicles.map((vehicle) => (
             <tr key={vehicle.id}>
               <td>{vehicle.vin}</td>
               <td>{vehicle.brand}</td>
@@ -69,7 +137,6 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
                   >
                     View Details
                   </Link>
-                  {/* Eliminar movido a la página de detalle */}
                 </div>
               </td>
             </tr>
