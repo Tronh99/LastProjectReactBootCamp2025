@@ -14,6 +14,8 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
     });
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 5;
   const sortedVehicles = [...vehicles];
   if (sortConfig.key) {
     sortedVehicles.sort((a, b) => {
@@ -28,6 +30,16 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
       return 0;
     });
   }
+  // Pagination logic
+  const totalRows = sortedVehicles.length;
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
+  const paginatedVehicles = sortedVehicles.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
   const getStatusBadgeClass = (status) => {
     const statusMap = {
       Disponible: "status-available",
@@ -117,7 +129,7 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
           </tr>
         </thead>
         <tbody>
-          {sortedVehicles.map((vehicle) => (
+          {paginatedVehicles.map((vehicle) => (
             <tr key={vehicle.id}>
               <td>{vehicle.vin}</td>
               <td>{vehicle.brand}</td>
@@ -125,7 +137,11 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
               <td>{vehicle.year}</td>
               <td>
                 <span className={getStatusBadgeClass(vehicle.status)}>
-                  {vehicle.status}
+                  {vehicle.status === "Disponible"
+                    ? "Available"
+                    : vehicle.status === "No Disponible"
+                    ? "Not Available"
+                    : vehicle.status}
                 </span>
               </td>
               <td>{vehicle.city}</td>
@@ -143,6 +159,42 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
           ))}
         </tbody>
       </table>
+      {/* Pagination controls */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 8,
+          marginTop: 16,
+        }}
+      >
+        <button
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="btn btn-secondary btn-small"
+        >
+          Prev
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i + 1}
+            onClick={() => goToPage(i + 1)}
+            className={`btn btn-small${
+              currentPage === i + 1 ? " btn-primary" : ""
+            }`}
+          >
+            {i + 1}
+          </button>
+        ))}
+        <button
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="btn btn-secondary btn-small"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
