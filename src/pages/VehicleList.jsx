@@ -1,17 +1,21 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import VehicleTable from "../components/VehicleTable";
 import Modal from "../components/Modal";
 import VehicleForm from "../components/VehicleFormModal";
 import { vehicleService } from "../services/vehicleService";
 
 const VehicleList = () => {
-  const [vehicles, setVehicles] = useState([]);
-  const [searchVin, setSearchVin] = useState("");
+  // --- ESTADO CENTRALIZADO ---
+  const [vehicles, setVehicles] = useState([]); // Lista completa de vehículos
+  const [searchVin, setSearchVin] = useState(""); // Término de búsqueda
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [connectionError, setConnectionError] = useState(null);
 
+  const rowsPerPage = 5; // Filas por página
+
+  // Cargar vehículos al montar el componente
   useEffect(() => {
     loadVehicles();
   }, []);
@@ -24,31 +28,17 @@ const VehicleList = () => {
       setVehicles(data);
     } catch (error) {
       console.error("Error loading vehicles:", error);
-      setConnectionError(error.message);
-      // Si es un error de conexión, mostrar mensaje específico
-      if (error.message.includes("No se pudo conectar")) {
-        setConnectionError(
-          "No se pudo conectar con el backend. Asegúrate de que esté ejecutándose en http://localhost:8080"
-        );
-      }
+      setConnectionError(
+        "No se pudo conectar con el backend. Asegúrate de que esté ejecutándose."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (vehicleId) => {
-    try {
-      await vehicleService.deleteVehicle(vehicleId);
-      // Actualizar la lista después de eliminar
-      await loadVehicles();
-    } catch (error) {
-      throw error; // Re-lanzar el error para que el detalle pueda manejarlo
-    }
-  };
-
   const handleCreateSuccess = (newVehicle) => {
     setShowCreateModal(false);
-    loadVehicles();
+    loadVehicles(); // Recargar la lista
     alert(
       `Vehicle ${newVehicle.brand} ${newVehicle.model} created successfully`
     );
@@ -56,6 +46,20 @@ const VehicleList = () => {
 
   const handleCloseModals = () => {
     setShowCreateModal(false);
+  };
+
+  // --- LÓGICA DE BÚSQUEDA Y FILTRADO ---
+  // 1. Filtra los vehículos basado en el searchVin
+  const filteredVehicles = searchVin.trim()
+    ? vehicles.filter((v) =>
+        v.vin.toLowerCase().includes(searchVin.trim().toLowerCase())
+      )
+    : vehicles;
+
+  // 2. Handler para el input de búsqueda: actualiza el término y resetea a la página 1
+  const handleSearchChange = (e) => {
+    setSearchVin(e.target.value);
+    setCurrentPage(1); // ¡IMPORTANTE! Resetea la paginación en cada búsqueda
   };
 
   return (
@@ -67,16 +71,12 @@ const VehicleList = () => {
             <p className="page-subtitle">
               {!loading &&
                 !connectionError &&
-                vehicles.length > 0 &&
-                `Total: ${vehicles.length} vehicle${
-                  vehicles.length !== 1 ? "s" : ""
+                `Total: ${filteredVehicles.length} vehicle${
+                  filteredVehicles.length !== 1 ? "s" : ""
                 }`}
             </p>
           </div>
-          <div
-            className="page-header-actions"
-            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
-          >
+          <div className="page-header-actions">
             <button
               onClick={() => setShowCreateModal(true)}
               className="btn btn-primary btn-large"
@@ -89,32 +89,12 @@ const VehicleList = () => {
         </div>
       </div>
 
-      {/* Search bar with icon between title and table */}
-      <form
-        onSubmit={(e) => e.preventDefault()}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          margin: "1rem 0",
-        }}
-      >
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            margin: 0,
-          }}
-        >
-          <span style={{ display: "flex", alignItems: "center" }}>
+      {/* Barra de búsqueda */}
+      <form onSubmit={(e) => e.preventDefault()} style={{ margin: "1rem 0" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span>
             <svg
-              style={{
-                width: 18,
-                height: 18,
-                color: "#a259e6",
-                marginRight: 4,
-              }}
+              style={{ width: 18, height: 18, color: "#a259e6" }}
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -130,44 +110,37 @@ const VehicleList = () => {
             type="text"
             placeholder="VIN"
             value={searchVin}
-            onChange={(e) => setSearchVin(e.target.value)}
+            onChange={handleSearchChange}
             className="form-input"
-            style={{ minWidth: 180 }}
+            style={{ minWidth: 10 }}
           />
         </label>
       </form>
 
-      {/* Mostrar error de conexión si existe */}
       {connectionError && (
         <div className="error-banner">
-          <div className="error-content">
-            <h3>⚠️ Connection Error</h3>
-            <p>{connectionError}</p>
-            <button onClick={loadVehicles} className="btn btn-secondary">
-              Retry Connection
-            </button>
-          </div>
+          <h3>⚠️ Connection Error</h3>
+          <p>{connectionError}</p>
+          <button onClick={loadVehicles} className="btn btn-secondary">
+            Retry Connection
+          </button>
         </div>
       )}
 
+      {/* Pasa los datos filtrados y el control de paginación a la tabla */}
       <VehicleTable
-        vehicles={
-          searchVin.trim()
-            ? vehicles.filter((v) =>
-                v.vin.toLowerCase().includes(searchVin.trim().toLowerCase())
-              )
-            : vehicles
-        }
-        onAdd={() => setShowCreateModal(true)}
+        vehicles={filteredVehicles}
         loading={loading}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        rowsPerPage={rowsPerPage}
+        onAdd={() => setShowCreateModal(true)}
       />
 
-      {/* Modal para crear vehículo */}
       <Modal
         isOpen={showCreateModal}
         onClose={handleCloseModals}
         title="Add New Vehicle"
-        size="medium"
       >
         <VehicleForm
           isEdit={false}

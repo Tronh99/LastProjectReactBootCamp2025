@@ -1,59 +1,72 @@
+import React from "react"; // Importante añadir React si usas React.useState
 import { Link } from "react-router-dom";
-import { useState } from "react";
 
-const VehicleTable = ({ vehicles, onAdd, loading }) => {
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+const VehicleTable = ({
+  vehicles,
+  loading,
+  currentPage,
+  setCurrentPage,
+  rowsPerPage,
+  onAdd,
+}) => {
+  // El estado de ordenamiento puede seguir siendo local a la tabla
+  const [sortConfig, setSortConfig] = React.useState({
+    key: null,
+    direction: "asc",
+  });
+
+  // --- LÓGICA DE ORDENAMIENTO ---
+  const sortedVehicles = React.useMemo(() => {
+    let sortableItems = [...vehicles];
+    if (sortConfig.key) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [vehicles, sortConfig]);
 
   const handleSort = (key) => {
-    setSortConfig((prev) => {
-      if (prev.key === key) {
-        // Toggle direction
-        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
-      }
-      return { key, direction: "asc" };
-    });
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1); // Resetea a la página 1 al ordenar
   };
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 5;
-  const sortedVehicles = [...vehicles];
-  if (sortConfig.key) {
-    sortedVehicles.sort((a, b) => {
-      let aValue = a[sortConfig.key];
-      let bValue = b[sortConfig.key];
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-      return 0;
-    });
-  }
-  // Pagination logic
+  // --- LÓGICA DE PAGINACIÓN (usa props) ---
   const totalRows = sortedVehicles.length;
   const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+  // Corta solo la porción de vehículos para la página actual
   const paginatedVehicles = sortedVehicles.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
+
   const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page); // Usa la función del padre
+    }
   };
+
   const getStatusBadgeClass = (status) => {
-    const statusMap = {
-      Disponible: "status-available",
-      "No Disponible": "status-sold",
-    };
-    return `status-badge ${statusMap[status] || "status-available"}`;
+    return `status-badge ${
+      status === "Disponible" ? "status-available" : "status-sold"
+    }`;
   };
 
   if (loading) {
     return (
       <div className="table-container">
-        <div className="empty-state">
-          <h3>Loading vehicles...</h3>
-        </div>
+        <h3>Loading vehicles...</h3>
       </div>
     );
   }
@@ -62,11 +75,8 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
     return (
       <div className="table-container">
         <div className="empty-state">
-          <h3>No vehicles registered</h3>
-          <p>Start by adding your first vehicle to the system.</p>
-          <button onClick={() => onAdd && onAdd()} className="btn btn-primary">
-            Add First Vehicle
-          </button>
+          <h3>No vehicles found</h3>
+          <p>No vehicles match your current search criteria.</p>
         </div>
       </div>
     );
@@ -139,9 +149,7 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
                 <span className={getStatusBadgeClass(vehicle.status)}>
                   {vehicle.status === "Disponible"
                     ? "Available"
-                    : vehicle.status === "No Disponible"
-                    ? "Not Available"
-                    : vehicle.status}
+                    : "Not Available"}
                 </span>
               </td>
               <td>{vehicle.city}</td>
@@ -159,38 +167,33 @@ const VehicleTable = ({ vehicles, onAdd, loading }) => {
           ))}
         </tbody>
       </table>
-      {/* Pagination controls */}
+
+      {/* Controles de paginación */}
       <div
+        className="pagination-controls"
         style={{
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          gap: 8,
-          marginTop: 16,
+          gap: 12,
+          margin: 16,
+
         }}
       >
         <button
           onClick={() => goToPage(currentPage - 1)}
           disabled={currentPage === 1}
-          className="btn btn-secondary btn-small"
+          className="btn btn-secondary"
         >
           Prev
         </button>
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i + 1}
-            onClick={() => goToPage(i + 1)}
-            className={`btn btn-small${
-              currentPage === i + 1 ? " btn-primary" : ""
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
         <button
           onClick={() => goToPage(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="btn btn-secondary btn-small"
+          className="btn btn-secondary"
         >
           Next
         </button>
